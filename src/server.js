@@ -8,5 +8,7 @@ app.set("views", __dirname + "/views");
 app.use("/public", express.static(__dirname + "/public"));
 
 app.get("/", (req, res) => res.render("home"));
+// enable catchall url:
+app.get("/*", (req, res) => res.redirect("/"));
 
 app.listen(3000, () => console.log("Listening on http://localhost:3000"));
