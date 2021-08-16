@@ -1,3 +1,5 @@
+import http from "http";
+import WebSocket from "ws";
 import express from "express";
 
 const app = express();
@@ -11,4 +13,9 @@ app.get("/", (req, res) => res.render("home"));
 // enable catchall url:
 app.get("/*", (req, res) => res.redirect("/"));
 
-app.listen(3000, () => console.log("Listening on http://localhost:3000"));
+const serverListener = () => console.log("Listening on http://localhost:3000");
+
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+server.listen(3000, serverListener);
