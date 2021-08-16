@@ -21,7 +21,6 @@ const wss = new WebSocket.Server({ server });
 const sockets = [];
 
 wss.on("connection", (socket) => {
-  console.log(socket);
   sockets.push(socket);
   console.log("Connected to Browser ✅");
   socket.addEventListener("close", () => {

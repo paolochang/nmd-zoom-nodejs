@@ -10,8 +10,11 @@ html(lang="en")
     header
       h1 Zoom Clone Coding
     main
+      form#nickname
+        input(type="text", placeholder="Set nickname" required)
+        button Save
       ul
-      form
+      form#message
         input(type="text", placeholder="Add message" required)
         button Send
     script(src="/public/js/app.js")
