@@ -1,5 +1,6 @@
 import http from "http";
-import WebSocket from "ws";
+// import WebSocket from "ws";
+import SocketIO from "socket.io";
 import express from "express";
 
 const app = express();
@@ -15,31 +16,43 @@ app.get("/*", (req, res) => res.redirect("/"));
 
 const serverListener = () => console.log("Listening on http://localhost:3000");
 
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const httpServer = http.createServer(app);
+const wsServer = SocketIO(httpServer);
 
-const sockets = [];
-
-wss.on("connection", (socket) => {
-  sockets.push(socket);
-  socket["nickname"] = "Anonymous";
-  console.log("Connected to Browser ✅");
-  socket.addEventListener("close", () => {
-    console.log("Client disconnected ❌");
-  });
-  socket.on("message", (incoming) => {
-    const message = JSON.parse(incoming);
-    switch (message.type) {
-      case "nickname":
-        socket["nickname"] = message.payload;
-        break;
-      case "new_message":
-        sockets.forEach((aSocket) =>
-          aSocket.send(`${socket.nickname}: ${message.payload}`)
-        );
-        break;
-    }
-  });
+/**
+ * Using SocketIO
+ */
+wsServer.on("connection", (socket) => {
+  console.log(socket);
 });
 
-server.listen(3000, serverListener);
+/**
+ * Using WebSocket
+ *
+ * const wss = new WebSocket.Server({ server });
+ * const sockets = [];
+ *
+ * wss.on("connection", (socket) => {
+ *   sockets.push(socket);
+ *   socket["nickname"] = "Anonymous";
+ *   console.log("Connected to Browser ✅");
+ *   socket.addEventListener("close", () => {
+ *     console.log("Client disconnected ❌");
+ *   });
+ *   socket.on("message", (incoming) => {
+ *     const message = JSON.parse(incoming);
+ *     switch (message.type) {
+ *       case "nickname":
+ *         socket["nickname"] = message.payload;
+ *         break;
+ *       case "new_message":
+ *         sockets.forEach((aSocket) =>
+ *           aSocket.send(`${socket.nickname}: ${message.payload}`)
+ *         );
+ *         break;
+ *     }
+ *   });
+ * });
+ */
+
+httpServer.listen(3000, serverListener);
