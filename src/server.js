@@ -23,7 +23,12 @@ const wsServer = SocketIO(httpServer);
  * Using SocketIO
  */
 wsServer.on("connection", (socket) => {
-  console.log(socket);
+  socket.on("enter_room", (incoming, callback) => {
+    console.log(incoming);
+    setTimeout(() => {
+      callback();
+    }, 10000);
+  });
 });
 
 /**
