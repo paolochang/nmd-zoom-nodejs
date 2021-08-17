@@ -22,12 +22,23 @@ const sockets = [];
 
 wss.on("connection", (socket) => {
   sockets.push(socket);
+  socket["nickname"] = "Anonymous";
   console.log("Connected to Browser ✅");
   socket.addEventListener("close", () => {
     console.log("Client disconnected ❌");
   });
-  socket.on("message", (message) => {
-    sockets.forEach((aSocket) => aSocket.send(message.toString()));
+  socket.on("message", (incoming) => {
+    const message = JSON.parse(incoming);
+    switch (message.type) {
+      case "nickname":
+        socket["nickname"] = message.payload;
+        break;
+      case "new_message":
+        sockets.forEach((aSocket) =>
+          aSocket.send(`${socket.nickname}: ${message.payload}`)
+        );
+        break;
+    }
   });
 });
 
