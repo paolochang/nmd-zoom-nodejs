@@ -26,7 +26,7 @@ wsServer.on("connection", (socket) => {
   socket.on("enter_room", (incoming, callback) => {
     console.log(incoming);
     setTimeout(() => {
-      callback();
+      callback("hello from the backend");
     }, 10000);
   });
 });

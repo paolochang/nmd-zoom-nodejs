@@ -9,8 +9,13 @@ const form = welcome.querySelector("form");
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const input = form.querySelector("input");
-  socket.emit("enter_room", { payload: input.value }, () =>
-    console.log("callback function triggered")
+  /**
+   * 1. Can emit any event
+   * 2. Can pass unlimited arguments to the backend in any DataType
+   * 3. Can define callback function (MUST BE THE LAST ARGUMENT)
+   */
+  socket.emit("enter_room", { payload: input.value }, (msg) =>
+    console.log("Backend says:", msg)
   );
   input.value = "";
 });
