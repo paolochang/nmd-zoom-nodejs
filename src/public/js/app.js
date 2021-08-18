@@ -17,6 +17,13 @@ function showRoom() {
   h3.innerText = `Room ${roomName}`;
 }
 
+function addMessage(message) {
+  const ul = room.querySelector("ul");
+  const li = document.createElement("li");
+  li.innerText = message;
+  ul.appendChild(li);
+}
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const input = form.querySelector("input");
@@ -29,6 +36,8 @@ form.addEventListener("submit", (event) => {
   roomName = input.value;
   input.value = "";
 });
+
+socket.on("welcome", () => addMessage("Someone joined!"));
 
 /**
  * Using WebSocket

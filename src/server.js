@@ -26,6 +26,7 @@ wsServer.on("connection", (socket) => {
   socket.on("enter_room", (roomName, callback) => {
     socket.join(roomName);
     callback();
+    socket.to(roomName).emit("welcome");
   });
 });
 
