@@ -5,6 +5,17 @@ const socket = io();
 
 const welcome = document.getElementById("welcome");
 const form = welcome.querySelector("form");
+const room = document.getElementById("room");
+room.hidden = true;
+
+let roomName;
+
+function showRoom() {
+  welcome.hidden = true;
+  room.hidden = false;
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomName}`;
+}
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -14,9 +25,8 @@ form.addEventListener("submit", (event) => {
    * 2. Can pass unlimited arguments to the backend in any DataType
    * 3. Can define callback function (MUST BE THE LAST ARGUMENT)
    */
-  socket.emit("enter_room", { payload: input.value }, (msg) =>
-    console.log("Backend says:", msg)
-  );
+  socket.emit("enter_room", input.value, showRoom);
+  roomName = input.value;
   input.value = "";
 });
 
