@@ -20,7 +20,18 @@ function handleMessageSubmit(event) {
   input.value = "";
 }
 
-function showRoom() {
+function showRooms(rooms) {
+  const roomList = home.querySelector("ul");
+  roomList.innerHTML = "";
+  if (rooms.length === 0) return;
+  rooms.forEach((room) => {
+    const li = document.createElement("li");
+    li.innerText = room;
+    roomList.appendChild(li);
+  });
+}
+
+function enterRoom() {
   home.hidden = true;
   room.hidden = false;
   const h3 = room.querySelector("h3");
@@ -45,7 +56,7 @@ function handleRoomSubmit(event) {
    * 2. Can pass unlimited arguments to the backend in any DataType
    * 3. Can define callback function (MUST BE THE LAST ARGUMENT)
    */
-  socket.emit("enter_room", roomInput.value, nickInput.value, showRoom);
+  socket.emit("enter_room", roomInput.value, nickInput.value, enterRoom);
   roomName = roomInput.value;
   userName = nickInput.value;
   roomInput.value = "";
@@ -57,6 +68,7 @@ form.addEventListener("submit", handleRoomSubmit);
 socket.on("welcome_message", (user) => addMessage(`${user} joined!`));
 socket.on("left_room", (user) => addMessage(`${user} left.`));
 socket.on("new_message", addMessage);
+socket.on("show_open_rooms", showRooms);
 
 /**
  * Using WebSocket

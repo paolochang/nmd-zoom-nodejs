@@ -19,6 +19,15 @@ const serverListener = () => console.log("Listening on http://localhost:3000");
 const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
+function findPublicRooms() {
+  const { sids, rooms } = wsServer.sockets.adapter;
+  const publicRooms = [];
+  rooms.forEach((_, key) => {
+    if (sids.get(key) === undefined) publicRooms.push(key);
+  });
+  return publicRooms;
+}
+
 /**
  * Using SocketIO
  */
@@ -28,11 +37,15 @@ wsServer.on("connection", (socket) => {
     socket.join(roomName);
     callback();
     socket.to(roomName).emit("welcome_message", nickName);
+    wsServer.sockets.emit("show_open_rooms", findPublicRooms());
   });
   socket.on("disconnecting", () => {
     socket.rooms.forEach((room) => {
       socket.to(room).emit("left_room", socket.nickname);
     });
+  });
+  socket.on("disconnect", () => {
+    wsServer.sockets.emit("show_open_rooms", findPublicRooms());
   });
   // socket.on("nickname", (nickname) => (socket["nickname"] = nickname));
   socket.on("new_message", (room, message, callback) => {
