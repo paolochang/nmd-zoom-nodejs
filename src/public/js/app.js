@@ -8,14 +8,14 @@ const form = home.querySelector("form");
 const room = document.getElementById("room");
 room.hidden = true;
 
-let roomName, userName;
+let roomname, username;
 
 function handleMessageSubmit(event) {
   event.preventDefault();
   const input = room.querySelector("#message input");
   let message = input.value;
-  socket.emit("new_message", roomName, message, () => {
-    addMessage(`${userName}: ${message}`);
+  socket.emit("new_message", roomname, message, () => {
+    addMessage(`${username}: ${message}`);
   });
   input.value = "";
 }
@@ -31,11 +31,15 @@ function showRooms(rooms) {
   });
 }
 
+function updateRoomHeader(count) {
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomname} (${count})`;
+}
+
 function enterRoom(count) {
   home.hidden = true;
   room.hidden = false;
-  const h3 = room.querySelector("h3");
-  h3.innerText = `Room ${roomName} (${count})`;
+  updateRoomHeader(count);
   const messageForm = room.querySelector("#message");
   messageForm.addEventListener("submit", handleMessageSubmit);
 }
@@ -49,16 +53,16 @@ function addMessage(message) {
 
 function handleRoomSubmit(event) {
   event.preventDefault();
-  const roomInput = form.querySelector("#home input#roomName");
-  const nickInput = form.querySelector("#home input#nickName");
+  const roomInput = form.querySelector("#home input#roomname");
+  const nickInput = form.querySelector("#home input#nickname");
   /**
    * 1. Can emit any event
    * 2. Can pass unlimited arguments to the backend in any DataType
    * 3. Can define callback function (MUST BE THE LAST ARGUMENT)
    */
   socket.emit("enter_room", roomInput.value, nickInput.value, enterRoom);
-  roomName = roomInput.value;
-  userName = nickInput.value;
+  roomname = roomInput.value;
+  username = nickInput.value;
   roomInput.value = "";
   nickInput.value = "";
 }
@@ -66,14 +70,12 @@ function handleRoomSubmit(event) {
 form.addEventListener("submit", handleRoomSubmit);
 
 socket.on("welcome_message", (user, count) => {
-  const h3 = room.querySelector("h3");
-  h3.innerText = `Room ${roomName} (${count})`;
+  updateRoomHeader(count);
   addMessage(`${user} joined!`);
 });
 
 socket.on("leaving_room", (user, count) => {
-  const h3 = room.querySelector("h3");
-  h3.innerText = `Room ${roomName} (${count})`;
+  updateRoomHeader(count);
   addMessage(`${user} left.`);
 });
 
