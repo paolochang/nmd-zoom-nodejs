@@ -23,10 +23,19 @@ const wsServer = SocketIO(httpServer);
  * Using SocketIO
  */
 wsServer.on("connection", (socket) => {
-  socket.on("enter_room", (roomName, callback) => {
-    socket.join(roomName);
+  socket.on("enter_room", (room, callback) => {
+    socket.join(room);
     callback();
-    socket.to(roomName).emit("welcome");
+    socket.to(room).emit("welcome");
+  });
+  socket.on("new_message", (room, message, callback) => {
+    socket.to(room).emit("new_message", message);
+    callback();
+  });
+  socket.on("disconnecting", () => {
+    socket.rooms.forEach((room) => {
+      socket.to(room).emit("left_room");
+    });
   });
 });
 

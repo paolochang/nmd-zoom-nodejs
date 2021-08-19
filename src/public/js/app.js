@@ -13,8 +13,20 @@ let roomName;
 function showRoom() {
   welcome.hidden = true;
   room.hidden = false;
+
   const h3 = room.querySelector("h3");
   h3.innerText = `Room ${roomName}`;
+
+  const form = room.querySelector("form");
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const input = form.querySelector("input");
+    let message = input.value;
+    socket.emit("new_message", roomName, message, () => {
+      addMessage(`You: ${message}`);
+    });
+    input.value = "";
+  });
 }
 
 function addMessage(message) {
@@ -38,6 +50,8 @@ form.addEventListener("submit", (event) => {
 });
 
 socket.on("welcome", () => addMessage("Someone joined!"));
+socket.on("left_room", () => addMessage("Someone left."));
+socket.on("new_message", addMessage);
 
 /**
  * Using WebSocket
