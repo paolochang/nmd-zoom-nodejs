@@ -3,36 +3,28 @@
  */
 const socket = io();
 
-const welcome = document.getElementById("welcome");
-const form = welcome.querySelector("form");
+const home = document.getElementById("home");
+const form = home.querySelector("form");
 const room = document.getElementById("room");
 room.hidden = true;
 
-let roomName;
-
-function handleNicknameSubmit(event) {
-  event.preventDefault();
-  const input = room.querySelector("#nickname input");
-  socket.emit("nickname", input.value);
-}
+let roomName, userName;
 
 function handleMessageSubmit(event) {
   event.preventDefault();
   const input = room.querySelector("#message input");
   let message = input.value;
   socket.emit("new_message", roomName, message, () => {
-    addMessage(`You: ${message}`);
+    addMessage(`${userName}: ${message}`);
   });
   input.value = "";
 }
 
 function showRoom() {
-  welcome.hidden = true;
+  home.hidden = true;
   room.hidden = false;
   const h3 = room.querySelector("h3");
   h3.innerText = `Room ${roomName}`;
-  const nicknameForm = room.querySelector("#nickname");
-  nicknameForm.addEventListener("submit", handleNicknameSubmit);
   const messageForm = room.querySelector("#message");
   messageForm.addEventListener("submit", handleMessageSubmit);
 }
@@ -46,15 +38,18 @@ function addMessage(message) {
 
 function handleRoomSubmit(event) {
   event.preventDefault();
-  const input = form.querySelector("input");
+  const roomInput = form.querySelector("#home input#roomName");
+  const nickInput = form.querySelector("#home input#nickName");
   /**
    * 1. Can emit any event
    * 2. Can pass unlimited arguments to the backend in any DataType
    * 3. Can define callback function (MUST BE THE LAST ARGUMENT)
    */
-  socket.emit("enter_room", input.value, showRoom);
-  roomName = input.value;
-  input.value = "";
+  socket.emit("enter_room", roomInput.value, nickInput.value, showRoom);
+  roomName = roomInput.value;
+  userName = nickInput.value;
+  roomInput.value = "";
+  nickInput.value = "";
 }
 
 form.addEventListener("submit", handleRoomSubmit);
