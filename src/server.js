@@ -28,7 +28,7 @@ function findPublicRooms() {
   return publicRooms;
 }
 
-function countMember(roomname) {
+function countMembers(roomname) {
   return wsServer.sockets.adapter.rooms.get(roomname)?.size;
 }
 
@@ -36,25 +36,36 @@ function countMember(roomname) {
  * Using SocketIO
  */
 wsServer.on("connection", (socket) => {
+  // Entering a room
   socket.on("enter_room", (roomname, nickname, callback) => {
     socket["nickname"] = nickname;
     socket.join(roomname);
-    callback(countMember(roomname));
+    callback(countMembers(roomname));
+
+    // Send welcome message to other browsers
     socket
       .to(roomname)
-      .emit("welcome_message", nickname, countMember(roomname));
+      .emit("welcome_message", nickname, countMembers(roomname));
+
+    // Update the total number of public rooms to the other browsers
     wsServer.sockets.emit("show_open_rooms", findPublicRooms());
   });
+
+  // Before chatroom disconnected
   socket.on("disconnecting", () => {
     socket.rooms.forEach((roomname) => {
       socket
         .to(roomname)
-        .emit("leaving_room", socket.nickname, countMember(roomname) - 1);
+        .emit("leaving_room", socket.nickname, countMembers(roomname) - 1);
     });
   });
+
+  // Chatroom disconnected
   socket.on("disconnect", () => {
     wsServer.sockets.emit("show_open_rooms", findPublicRooms());
   });
+
+  // Send new_message
   socket.on("new_message", (room, message, callback) => {
     socket.to(room).emit("new_message", `${socket.nickname}: ${message}`);
     callback();
