@@ -28,26 +28,33 @@ function findPublicRooms() {
   return publicRooms;
 }
 
+function countMember(roomname) {
+  return wsServer.sockets.adapter.rooms.get(roomname)?.size;
+}
+
 /**
  * Using SocketIO
  */
 wsServer.on("connection", (socket) => {
-  socket.on("enter_room", (roomName, nickName, callback) => {
-    socket["nickname"] = nickName;
-    socket.join(roomName);
-    callback();
-    socket.to(roomName).emit("welcome_message", nickName);
+  socket.on("enter_room", (roomname, nickname, callback) => {
+    socket["nickname"] = nickname;
+    socket.join(roomname);
+    callback(countMember(roomname));
+    socket
+      .to(roomname)
+      .emit("welcome_message", nickname, countMember(roomname));
     wsServer.sockets.emit("show_open_rooms", findPublicRooms());
   });
   socket.on("disconnecting", () => {
-    socket.rooms.forEach((room) => {
-      socket.to(room).emit("left_room", socket.nickname);
+    socket.rooms.forEach((roomname) => {
+      socket
+        .to(roomname)
+        .emit("leaving_room", socket.nickname, countMember(roomname) - 1);
     });
   });
   socket.on("disconnect", () => {
     wsServer.sockets.emit("show_open_rooms", findPublicRooms());
   });
-  // socket.on("nickname", (nickname) => (socket["nickname"] = nickname));
   socket.on("new_message", (room, message, callback) => {
     socket.to(room).emit("new_message", `${socket.nickname}: ${message}`);
     callback();

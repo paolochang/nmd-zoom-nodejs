@@ -31,11 +31,11 @@ function showRooms(rooms) {
   });
 }
 
-function enterRoom() {
+function enterRoom(count) {
   home.hidden = true;
   room.hidden = false;
   const h3 = room.querySelector("h3");
-  h3.innerText = `Room ${roomName}`;
+  h3.innerText = `Room ${roomName} (${count})`;
   const messageForm = room.querySelector("#message");
   messageForm.addEventListener("submit", handleMessageSubmit);
 }
@@ -65,8 +65,18 @@ function handleRoomSubmit(event) {
 
 form.addEventListener("submit", handleRoomSubmit);
 
-socket.on("welcome_message", (user) => addMessage(`${user} joined!`));
-socket.on("left_room", (user) => addMessage(`${user} left.`));
+socket.on("welcome_message", (user, count) => {
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomName} (${count})`;
+  addMessage(`${user} joined!`);
+});
+
+socket.on("leaving_room", (user, count) => {
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomName} (${count})`;
+  addMessage(`${user} left.`);
+});
+
 socket.on("new_message", addMessage);
 socket.on("show_open_rooms", showRooms);
 
