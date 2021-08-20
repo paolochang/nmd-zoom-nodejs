@@ -10,18 +10,22 @@ html(lang="en")
     header
       h1 Zoom
     main
-      div#home
-        form
-          input#roomname(type="text" placeholder="room name" required)
-          input#nickname(type="text" placeholder="Set a nickname" required)
-          button Enter Room
-        h4 Available Rooms:
-        ul
-      div#room
-        h3
-        ul
-        form#message
-          input(type="text" placeholder="Add a message" required)
-          button Send
+      div#myStream
+        video#myVideo(autoplay playsinline width="400" height="400") 
+        button#muteButton Mute  
+        button#cameraButton Camera Off  
+      //- div#home
+      //-   form
+      //-     input#roomname(type="text" placeholder="room name" required)
+      //-     input#nickname(type="text" placeholder="Set a nickname" required)
+      //-     button Enter Room
+      //-   h4 Available Rooms:
+      //-   ul
+      //- div#room
+      //-   h3
+      //-   ul
+      //-   form#message
+      //-     input(type="text" placeholder="Add a message" required)
+      //-     button Send
     script(src="/socket.io/socket.io.js") 
     script(src="/public/js/app.js")
