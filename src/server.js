@@ -29,6 +29,9 @@ wsServer.on("connection", (socket) => {
     callback();
     socket.to(roomname).emit("welcome");
   });
+  socket.on("offer", (roomname, offer) => {
+    socket.to(roomname).emit("offer", offer);
+  });
 });
 
 /**
