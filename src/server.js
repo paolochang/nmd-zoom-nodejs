@@ -24,13 +24,15 @@ const wsServer = new Server(httpServer);
  */
 
 wsServer.on("connection", (socket) => {
-  socket.on("enter_room", (roomname, callback) => {
+  socket.on("enter_room", (roomname) => {
     socket.join(roomname);
-    callback();
     socket.to(roomname).emit("welcome");
   });
   socket.on("offer", (roomname, offer) => {
     socket.to(roomname).emit("offer", offer);
+  });
+  socket.on("answer", (roomname, answer) => {
+    socket.to(rommname).emit("answer", answer);
   });
 });
 
