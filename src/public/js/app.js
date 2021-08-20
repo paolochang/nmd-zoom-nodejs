@@ -8,7 +8,12 @@ const muteButton = document.getElementById("muteButton");
 const cameraButton = document.getElementById("cameraButton");
 const cameraSelect = document.getElementById("cameraSelect");
 
-let myStream;
+const home = document.getElementById("home");
+const call = document.getElementById("call");
+
+call.hidden = true;
+
+let myStream, roomname;
 let isMuted = false;
 let cameraOff = false;
 
@@ -46,7 +51,7 @@ async function getMedia(deviceId) {
   }
 }
 
-getMedia();
+// getMedia();
 
 function handleMuteClick() {
   myStream.getAudioTracks().forEach((track) => {
@@ -81,6 +86,28 @@ async function handleCameraChange() {
 muteButton.addEventListener("click", handleMuteClick);
 cameraButton.addEventListener("click", handleCameraClick);
 cameraSelect.addEventListener("input", handleCameraChange);
+
+const homeForm = home.querySelector("form");
+
+function startMedia() {
+  home.hidden = true;
+  call.hidden = false;
+  getMedia();
+}
+
+function handleHomeSubmit(event) {
+  event.preventDefault();
+  const input = homeForm.querySelector("input");
+  socket.emit("enter_room", input.value, startMedia);
+  roomname = input.value;
+  input.value = "";
+}
+
+homeForm.addEventListener("submit", handleHomeSubmit);
+
+socket.on("welcome", () => {
+  console.log("Someone joined!");
+});
 
 /**
  *  Chat using SocketIO

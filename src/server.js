@@ -3,6 +3,7 @@ import http from "http";
 import { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
 import express from "express";
+import { createSocket } from "dgram";
 
 const app = express();
 
@@ -16,69 +17,73 @@ app.get("/*", (req, res) => res.redirect("/"));
 const serverListener = () => console.log("Listening on http://localhost:3000");
 
 const httpServer = http.createServer(app);
-const wsServer = new Server(httpServer, {
-  cors: {
-    origin: ["https://admin.socket.io"],
-    credentials: true,
-  },
-});
+const wsServer = new Server(httpServer);
 
-instrument(wsServer, {
-  auth: false,
-});
+/**
+ * Using SocketIO & WebRTC
+ */
 
-function findPublicRooms() {
-  const { sids, rooms } = wsServer.sockets.adapter;
-  const publicRooms = [];
-  rooms.forEach((_, key) => {
-    if (sids.get(key) === undefined) publicRooms.push(key);
+wsServer.on("connection", (socket) => {
+  socket.on("enter_room", (roomname, callback) => {
+    socket.join(roomname);
+    callback();
+    socket.to(roomname).emit("welcome");
   });
-  return publicRooms;
-}
-
-function countMembers(roomname) {
-  return wsServer.sockets.adapter.rooms.get(roomname)?.size;
-}
+});
 
 /**
  * Using SocketIO
+ *
+ * function findPublicRooms() {
+ *   const { sids, rooms } = wsServer.sockets.adapter;
+ *   const publicRooms = [];
+ *   rooms.forEach((_, key) => {
+ *     if (sids.get(key) === undefined) publicRooms.push(key);
+ *   });
+ *   return publicRooms;
+ * }
+ *
+ * function countMembers(roomname) {
+ *   return wsServer.sockets.adapter.rooms.get(roomname)?.size;
+ * }
+ *
+ * wsServer.on("connection", (socket) => {
+ *   // Entering a room
+ *   socket.on("enter_room", (roomname, nickname, callback) => {
+ *     socket["nickname"] = nickname;
+ *     socket.join(roomname);
+ *     callback(countMembers(roomname));
+ *
+ *     // Send welcome message to other browsers
+ *     socket
+ *       .to(roomname)
+ *       .emit("welcome_message", nickname, countMembers(roomname));
+ *
+ *     // Update the total number of public rooms to the other browsers
+ *     wsServer.sockets.emit("show_open_rooms", findPublicRooms());
+ *   });
+ *
+ *   // Before chatroom disconnected
+ *   socket.on("disconnecting", () => {
+ *     socket.rooms.forEach((roomname) => {
+ *       socket
+ *         .to(roomname)
+ *         .emit("leaving_room", socket.nickname, countMembers(roomname) - 1);
+ *     });
+ *   });
+ *
+ *   // Chatroom disconnected
+ *   socket.on("disconnect", () => {
+ *     wsServer.sockets.emit("show_open_rooms", findPublicRooms());
+ *   });
+ *
+ *   // Send new_message
+ *   socket.on("new_message", (room, message, callback) => {
+ *     socket.to(room).emit("new_message", `${socket.nickname}: ${message}`);
+ *     callback();
+ *   });
+ * });
  */
-wsServer.on("connection", (socket) => {
-  // Entering a room
-  socket.on("enter_room", (roomname, nickname, callback) => {
-    socket["nickname"] = nickname;
-    socket.join(roomname);
-    callback(countMembers(roomname));
-
-    // Send welcome message to other browsers
-    socket
-      .to(roomname)
-      .emit("welcome_message", nickname, countMembers(roomname));
-
-    // Update the total number of public rooms to the other browsers
-    wsServer.sockets.emit("show_open_rooms", findPublicRooms());
-  });
-
-  // Before chatroom disconnected
-  socket.on("disconnecting", () => {
-    socket.rooms.forEach((roomname) => {
-      socket
-        .to(roomname)
-        .emit("leaving_room", socket.nickname, countMembers(roomname) - 1);
-    });
-  });
-
-  // Chatroom disconnected
-  socket.on("disconnect", () => {
-    wsServer.sockets.emit("show_open_rooms", findPublicRooms());
-  });
-
-  // Send new_message
-  socket.on("new_message", (room, message, callback) => {
-    socket.to(room).emit("new_message", `${socket.nickname}: ${message}`);
-    callback();
-  });
-});
 
 /**
  * Using WebSocket

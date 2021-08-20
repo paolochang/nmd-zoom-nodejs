@@ -10,12 +10,17 @@ html(lang="en")
     header
       h1 Zoom
     main
-      div#myStream
-        video#myVideo(autoplay playsinline width="400" height="400") 
-        button#muteButton Mute  
-        button#cameraButton Camera Off
-        select#cameraSelect
-          option(value="test") Test
+      div#home 
+        form
+          input(type="text" placeholder="Enter room name" required)
+          button Join
+      div#call
+        div#myStream
+          video#myVideo(autoplay playsinline width="400" height="400") 
+          button#muteButton Mute  
+          button#cameraButton Camera Off
+          select#cameraSelect
+            option(value="test") Test
       //- div#home
       //-   form
       //-     input#roomname(type="text" placeholder="room name" required)
