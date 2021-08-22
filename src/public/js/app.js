@@ -108,32 +108,55 @@ async function handleHomeSubmit(event) {
 homeForm.addEventListener("submit", handleHomeSubmit);
 
 socket.on("welcome", async () => {
-  console.log("Someone joined!");
+  // console.log("Someone joined!");
   const offer = await peerConnection.createOffer();
   peerConnection.setLocalDescription(offer);
   socket.emit("offer", roomname, offer);
-  console.log("Offer sent!");
+  // console.log("Offer sent");
 });
 
 socket.on("offer", async (offer) => {
+  // console.log("Offer received");
   peerConnection.setRemoteDescription(offer);
   const answer = await peerConnection.createAnswer();
   peerConnection.setLocalDescription(answer);
   socket.emit("answer", roomname, answer);
+  // console.log("Answer sent");
 });
 
 socket.on("answer", (answer) => {
+  // console.log("Answer received");
   peerConnection.setRemoteDescription(answer);
+});
+
+socket.on("ice_candidate", (iceCandidate) => {
+  // console.log("ICECandidate received");
+  peerConnection.addIceCandidate(iceCandidate);
 });
 
 // RTC Code
 
 function makeConnection() {
   peerConnection = new RTCPeerConnection();
-  console.log(myStream.getTracks());
+  peerConnection.addEventListener("icecandidate", handleICECandidate);
+  peerConnection.addEventListener("addstream", handleAddStream);
+  // console.log(myStream.getTracks());
   myStream
     .getTracks()
     .forEach((track) => peerConnection.addTrack(track, myStream));
+}
+
+function handleICECandidate(data) {
+  socket.emit("ice_candidate", roomname, data.candidate);
+  // console.log("ICECandidate sent");
+}
+
+function handleAddStream(data) {
+  // console.log("got an stream from my peer");
+  // console.log("peer", data.stream);
+  // console.log("mine", myStream);
+  const peersVideo = document.getElementById("peerVideo");
+  peersVideo.srcObject = data.stream;
 }
 
 /**

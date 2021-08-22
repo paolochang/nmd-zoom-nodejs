@@ -32,7 +32,10 @@ wsServer.on("connection", (socket) => {
     socket.to(roomname).emit("offer", offer);
   });
   socket.on("answer", (roomname, answer) => {
-    socket.to(rommname).emit("answer", answer);
+    socket.to(roomname).emit("answer", answer);
+  });
+  socket.on("ice_candidate", (roomname, iceCandidate) => {
+    socket.to(roomname).emit("ice_candidate", iceCandidate);
   });
 });
 
