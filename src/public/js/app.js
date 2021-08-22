@@ -13,7 +13,7 @@ const call = document.getElementById("call");
 
 call.hidden = true;
 
-let myStream, roomname, peerConnection;
+let myStream, roomname, peerConnection, dataChannel;
 let isMuted = false;
 let cameraOff = false;
 
@@ -116,6 +116,8 @@ homeForm.addEventListener("submit", handleHomeSubmit);
 
 socket.on("welcome", async () => {
   // console.log("Someone joined!");
+  dataChannel = peerConnection.createDataChannel("chat");
+  dataChannel.addEventListener("message", (event) => console.log(event.data));
   const offer = await peerConnection.createOffer();
   peerConnection.setLocalDescription(offer);
   socket.emit("offer", roomname, offer);
@@ -124,6 +126,10 @@ socket.on("welcome", async () => {
 
 socket.on("offer", async (offer) => {
   // console.log("Offer received");
+  peerConnection.addEventListener("datachannel", (event) => {
+    dataChannel = event.channel;
+    dataChannel.addEventListener("message", (event) => console.log(event.data));
+  });
   peerConnection.setRemoteDescription(offer);
   const answer = await peerConnection.createAnswer();
   peerConnection.setLocalDescription(answer);
