@@ -10,23 +10,23 @@ Zoom clone coding using NodeJS, SocketIO, WebRTC and ReactJS.
 ### Initial Setup
 
 ```
-cd server
-npm install
+$ cd server
+$ npm install
 ```
 
 ```
-cd client
-npm install
+$ cd client
+$ npm install
 ```
 
 ### Run Servers
 
 ```
-cd server
-npm run dev
+$ cd server
+$ npm run dev
 ```
 
 ```
-cd client
-npm start
+$ cd client
+$ npm start
 ```
