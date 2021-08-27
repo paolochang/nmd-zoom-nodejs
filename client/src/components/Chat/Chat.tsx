@@ -15,6 +15,17 @@ const Chat: React.FC<IChat> = ({ room, name }) => {
   const [messages, setMessages] = useState<IMessage[]>([]);
 
   useEffect(() => {
+    socket.emit("welcome", room, (croom: string) => {
+      setMessages([
+        {
+          user: "notice",
+          text: `welcome to the ${croom}`,
+        },
+      ]);
+    });
+  }, [room, name]);
+
+  useEffect(() => {
     socket.on("message", (message) => {
       setMessages([...messages, message]);
     });
@@ -23,7 +34,7 @@ const Chat: React.FC<IChat> = ({ room, name }) => {
   const sendMessageHandler = (event: React.SyntheticEvent) => {
     event.preventDefault();
     if (message) {
-      socket.emit("message", message, () => {
+      socket.emit("message", name, message, () => {
         setMessages([...messages, { user: name, text: message }]);
         setMessage("");
       });

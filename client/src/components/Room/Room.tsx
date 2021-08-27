@@ -23,15 +23,14 @@ const Room: React.FC<IRoom> = ({ location }) => {
   }, [location.search]);
 
   useEffect(() => {
-    socket.on("count", (numMember) => {
-      console.log(numMember);
-      setCount(numMember.length);
+    socket.on("room_data", (room) => {
+      setCount(room.users);
     });
   }, [count]);
 
   return (
     <div className="container">
-      <InfoBar room={room} count={count} />
+      <InfoBar name={name} room={room} count={count} setCount={setCount} />
       <div className="content">
         <Video />
         <Chat room={room} name={name} />

@@ -28,12 +28,22 @@ const Message: React.FC<IMessageComponent> = ({
       </div>
     </div>
   ) : (
-    <div className="messageContainer justifyStart">
-      <div className="messageBox backgroundLight">
-        <p className="messageText colorDark">{ReactEmoji.emojify(text)}</p>
-      </div>
-      <p className="sentText pl-10 ">{user}</p>
-    </div>
+    <>
+      {user === "notice" ? (
+        <div className="messageContainer justifyCenter">
+          <div className="noticeBox backgroundNotice">
+            <p className="noticeText colorWhite">{ReactEmoji.emojify(text)}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="messageContainer justifyStart">
+          <div className="messageBox backgroundLight">
+            <p className="messageText colorDark">{ReactEmoji.emojify(text)}</p>
+          </div>
+          <p className="sentText pl-10 ">{user}</p>
+        </div>
+      )}
+    </>
   );
 };
 

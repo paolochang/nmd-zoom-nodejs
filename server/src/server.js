@@ -4,9 +4,13 @@ import socketio, { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
 import express from "express";
 import router from "./router";
-import { isObject } from "util";
 
-const { addUser, removeUser, getUser, getUsersInRoom } = require("./users.js");
+const {
+  addUser,
+  removeUser,
+  getUser,
+  getNumUsersInRoom,
+} = require("./users.js");
 
 const PORT = process.env.PORT || 5000;
 
@@ -25,53 +29,49 @@ const serverListener = () =>
   console.log(`Listening on http://localhost:${PORT}`);
 
 const httpServer = http.createServer(app);
-const wsServer = new Server(httpServer);
-// const io = socketio(httpServer);
+// const wsServer = new Server(httpServer);
+const io = socketio(httpServer);
 
 /**
  * Using SocketIO & WebRTC
  */
 
-wsServer.on("connection", (socket) => {
+io.on("connection", (socket) => {
   console.log("We have new connection");
 
   socket.on("join", ({ name, room }, callback) => {
     const { error, user } = addUser({ id: socket.id, name, room });
     if (error) return callback(error);
     socket.join(user.room);
-    socket.emit("count", getUsersInRoom(user.room));
+    socket.in(user.room).emit("room_data", {
+      room: user.room,
+      users: getNumUsersInRoom(user.room),
+    });
+    socket.broadcast.to(user.room).emit("message", {
+      user: "notice",
+      text: `${user.name} has joined!`,
+    });
     callback(user);
   });
 
-  socket.on("welcome", (userId) => {
-    const { user } = getUser(userId);
-    socket.emit("welcome", {
-      user: "admin",
-      text: `${user.name}, welcome to the room ${user.room}`,
-    });
-    socket.broadcast.to(user.room).emit("welcome", {
-      user: "admin",
-      text: `${user.name}, has joined!`,
-    });
-  });
+  socket.on("welcome", (room, callback) => callback(room));
 
-  socket.on("message", (message, callback) => {
-    console.log("Server received:", message);
-    const user = getUser(socket.id);
-    console.log(`Server will send to ${user.room}:`, message);
+  socket.on("message", (name, message, callback) => {
+    const user = getUser(name);
     socket.to(user.room).emit("message", { user: user.name, text: message });
     callback();
   });
 
-  socket.on("before_disconnect", async (userId) => {
-    const users = await removeUser(userId);
-    console.log("before_disconnect:", users);
+  socket.on("leave", (name, room) => {
+    removeUser(socket.id);
+    socket.to(room).emit("message", {
+      user: "notice",
+      text: `${name} left the ${room}`,
+    });
+    socket.to(room).emit("leave", getNumUsersInRoom(room));
+    socket.leave(room);
   });
 
-  socket.on("hello", () => {
-    console.log("Hello from client");
-    socket.emit("hello", "hello from server");
-  });
   socket.on("enter_room", (roomname) => {
     socket.join(roomname);
     socket.to(roomname).emit("welcome");
