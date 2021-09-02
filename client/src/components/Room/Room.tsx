@@ -15,6 +15,8 @@ const Room: React.FC<IRoom> = ({ location }) => {
   const [room, setRoom] = useState("");
   const [name, setName] = useState("");
   const [count, setCount] = useState(1);
+  const [isVideoOn, setIsVideoOn] = useState(false);
+  const [isVolumeOn, setIsVolumOn] = useState(false);
 
   useEffect(() => {
     const { name, room } = queryString.parse(location.search);
@@ -32,9 +34,14 @@ const Room: React.FC<IRoom> = ({ location }) => {
     <div className="container">
       <InfoBar name={name} room={room} count={count} setCount={setCount} />
       <div className="content">
-        <Video />
+        <Video isVideoOn={isVideoOn} isVolumeOn={isVolumeOn} />
         <Chat room={room} name={name} />
-        <ActionBar />
+        <ActionBar
+          isVideoOn={isVideoOn}
+          setIsVideoOn={setIsVideoOn}
+          isVolumeOn={isVolumeOn}
+          setIsVolumOn={setIsVolumOn}
+        />
       </div>
     </div>
   );

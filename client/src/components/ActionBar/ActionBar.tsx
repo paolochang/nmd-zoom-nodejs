@@ -3,21 +3,30 @@ import { GiSpeaker, GiSpeakerOff } from "react-icons/gi";
 import { IoVideocam, IoVideocamOff } from "react-icons/io5";
 import "./ActionBar.css";
 
-const ActionBar: React.FC = () => {
-  const [isCameraOff, setIsCameraOff] = useState(false);
-  const [isMute, setIsMute] = useState(false);
+interface IActionBar {
+  isVideoOn: boolean;
+  setIsVideoOn: any;
+  isVolumeOn: boolean;
+  setIsVolumOn: any;
+}
 
+const ActionBar: React.FC<IActionBar> = ({
+  isVideoOn,
+  setIsVideoOn,
+  isVolumeOn,
+  setIsVolumOn,
+}) => {
   const onClickCamera = () => {
-    setIsCameraOff((prev) => !prev);
+    setIsVideoOn((prev: boolean) => !prev);
   };
 
   const onClickSpeaker = () => {
-    setIsMute((prev) => !prev);
+    setIsVolumOn((prev: boolean) => !prev);
   };
 
   return (
     <div className="action-container">
-      {isCameraOff ? (
+      {isVideoOn ? (
         <button className="action-button" onClick={onClickCamera}>
           <IoVideocam className="react-icon" color="limegreen" size="2.2em" />
         </button>
@@ -26,7 +35,7 @@ const ActionBar: React.FC = () => {
           <IoVideocamOff className="react-icon" color="tomato" size="2.2em" />
         </button>
       )}
-      {isMute ? (
+      {isVolumeOn ? (
         <button className="action-button" onClick={onClickSpeaker}>
           <GiSpeaker className="react-icon" color="limegreen" size="2.5em" />
         </button>
