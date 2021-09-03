@@ -1,29 +1,77 @@
 import http from "http";
 // import WebSocket from "ws";
-import { Server } from "socket.io";
+import socketio, { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
 import express from "express";
-import { createSocket } from "dgram";
+import router from "./router";
+
+const {
+  addUser,
+  removeUser,
+  getUser,
+  getNumUsersInRoom,
+} = require("./users.js");
+
+const PORT = process.env.PORT || 5000;
 
 const app = express();
 
-app.set("view engine", "pug");
-app.set("views", __dirname + "/views");
-app.use("/public", express.static(__dirname + "/public"));
-app.get("/", (req, res) => res.render("home"));
-// enable catchall url:
-app.get("/*", (req, res) => res.redirect("/"));
+// app.set("view engine", "pug");
+// app.set("views", __dirname + "/views");
+// app.use("/public", express.static(__dirname + "/public"));
+// app.get("/", (req, res) => res.render("home"));
+// // enable catchall url:
+// app.get("/*", (req, res) => res.redirect("/"));
 
-const serverListener = () => console.log("Listening on http://localhost:3000");
+app.use(router);
+
+const serverListener = () =>
+  console.log(`Listening on http://localhost:${PORT}`);
 
 const httpServer = http.createServer(app);
-const wsServer = new Server(httpServer);
+// const wsServer = new Server(httpServer);
+const io = socketio(httpServer);
 
 /**
  * Using SocketIO & WebRTC
  */
 
-wsServer.on("connection", (socket) => {
+io.on("connection", (socket) => {
+  console.log("We have new connection");
+
+  socket.on("join", ({ name, room }, callback) => {
+    const { error, user } = addUser({ id: socket.id, name, room });
+    if (error) return callback(error);
+    socket.join(user.room);
+    socket.in(user.room).emit("room_data", {
+      room: user.room,
+      users: getNumUsersInRoom(user.room),
+    });
+    socket.broadcast.to(user.room).emit("message", {
+      user: "notice",
+      text: `${user.name} has joined!`,
+    });
+    callback(user);
+  });
+
+  socket.on("welcome", (room, callback) => callback(room));
+
+  socket.on("message", (name, message, callback) => {
+    const user = getUser(name);
+    socket.to(user.room).emit("message", { user: user.name, text: message });
+    callback();
+  });
+
+  socket.on("leave", (name, room) => {
+    removeUser(socket.id);
+    socket.to(room).emit("message", {
+      user: "notice",
+      text: `${name} left the ${room}`,
+    });
+    socket.to(room).emit("leave", getNumUsersInRoom(room));
+    socket.leave(room);
+  });
+
   socket.on("enter_room", (roomname) => {
     socket.join(roomname);
     socket.to(roomname).emit("welcome");
@@ -36,6 +84,10 @@ wsServer.on("connection", (socket) => {
   });
   socket.on("ice_candidate", (roomname, iceCandidate) => {
     socket.to(roomname).emit("ice_candidate", iceCandidate);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Connection disconnected");
   });
 });
 
@@ -122,4 +174,4 @@ wsServer.on("connection", (socket) => {
  * });
  */
 
-httpServer.listen(3000, serverListener);
+httpServer.listen(PORT, serverListener);

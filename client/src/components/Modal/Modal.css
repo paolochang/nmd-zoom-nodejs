@@ -1,0 +1,18 @@
+.background {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #2f2f2fd3;
+}
+
+.modal-container {
+  background-color: white;
+  width: 40%;
+  height: 40%;
+}
+
+.body {
+}

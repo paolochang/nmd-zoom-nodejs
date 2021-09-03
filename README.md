@@ -1,9 +1,32 @@
-# Zoom Clone Coding
+## Zoom Clone Coding
 
-Zoom clone coding using NodeJS, WebRTC and Websockets.
+Zoom clone coding using NodeJS, SocketIO, WebRTC and ReactJS.
 
-## References
+### Features
 
-- [Documentation](https://socket.io/docs/v4)
-- [Server API](https://socket.io/docs/v4/server-api/)
-- [Client API](https://socket.io/docs/v4/client-api/)
+- No registration
+- Real-time messaging and video streaming
+
+### Initial Setup
+
+```
+$ cd server
+$ npm install
+```
+
+```
+$ cd client
+$ npm install
+```
+
+### Run Servers
+
+```
+$ cd server
+$ npm run dev
+```
+
+```
+$ cd client
+$ npm start
+```
